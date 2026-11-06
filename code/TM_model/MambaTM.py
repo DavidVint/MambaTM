@@ -155,7 +155,7 @@ class Model(nn.Module):
         
         self.encoder = EncodeCell(para)
         self.ref_encoder = EncodeCell(para, 4)
-        self.convert_ref = nn.Conv2d(128, 128, 1)
+        self.convert_ref = nn.Conv2d(self.n_feats * 8, self.n_feats * 8, 1)
         H, W, T = input_size
         self.set_h_curve(H, W, T, "cuda")
         self.SGlobalMambaBlocks = nn.ModuleList()
