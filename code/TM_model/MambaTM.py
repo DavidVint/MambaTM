@@ -177,7 +177,13 @@ class Model(nn.Module):
         SW = math.ceil(W/8)
         h_curve = list(Hilbert3d(width=SW, height=SH, depth=T))
         h_curve = torch.tensor(h_curve).long().to(device)
-        self.h_curve = h_curve[:, 0] * SW * T + h_curve[:, 1] * T + h_curve[:, 2]
+        # Hilbert3d(width=SW, height=SH, ...) yields column 0 ranging over SW and
+        # column 1 ranging over SH, but x/h below is flattened in (SH, SW, T) order -
+        # so the SH-ranging column (1) needs the SW*T stride and the SW-ranging
+        # column (0) needs the T stride. Getting this backwards (as upstream does) is
+        # silently correct whenever SH==SW (square frames) and produces out-of-bounds
+        # scatter_add_ indices otherwise.
+        self.h_curve = h_curve[:, 1] * SW * T + h_curve[:, 0] * T + h_curve[:, 2]
         
     def forward(self, x):
         B, T, C, H, W = x.shape
